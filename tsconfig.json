@@ -3,10 +3,14 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "rootDir": ".",
+    "outDir": "./dist",
     "strict": true,
     "ignoreDeprecations": "6.0",
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "sourceMap": true,
+    "declaration": false,
     "types": ["node"],
     "baseUrl": ".",
     "paths": {
@@ -15,6 +19,6 @@
       "@app/*": ["APP/*"]
     }
   },
-  "include": ["**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": ["APP/**/*.ts", "API/**/*.ts", "CORE/**/*.ts", "scripts/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
 }

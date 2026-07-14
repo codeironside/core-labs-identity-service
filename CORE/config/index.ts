@@ -19,9 +19,22 @@ const EnvSchema = z.object({
   NODE_ENV: z.enum(['development', 'staging', 'production', 'test']).default('development'),
   PORT: z.coerce.number().default(4000),
   API_VERSION: z.string().default('v1'),
+  SERVICE_VERSION: z.string().default('0.0.0'),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
   FRONTEND_URL: z.string().url().default('http://localhost:5173'),
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
+  GRAFANA_LOKI_HOST: z
+    .string()
+    .optional()
+    .transform((s) => (s?.trim() ? s.trim() : undefined)),
+  GRAFANA_LOKI_USER_ID: z
+    .string()
+    .optional()
+    .transform((s) => (s?.trim() ? s.trim() : undefined)),
+  GRAFANA_LOKI_API_TOKEN: z
+    .string()
+    .optional()
+    .transform((s) => (s?.trim() ? s.trim() : undefined)),
 
   MONGODB_URI: z.string(),
   MONGODB_MAX_POOL_SIZE: z.coerce.number().default(10),
@@ -95,7 +108,7 @@ const parsed = EnvSchema.safeParse(process.env);
 if (!parsed.success) {
   console.error('[CONFIG] Environment validation failed:');
   parsed.error.issues.forEach((issue: z.ZodIssue) => {
-    console.error(`  ${issue.path.join('.')} — ${issue.message}`);
+    console.error(`  ${issue.path.join('.')} - ${issue.message}`);
   });
   process.exit(1);
 }
@@ -110,6 +123,12 @@ export const config = {
   frontendUrl: e.FRONTEND_URL,
   corsOrigin: e.CORS_ORIGIN,
   serviceName: e.SERVICE_NAME,
+  serviceVersion: e.SERVICE_VERSION,
+  grafanaLoki: {
+    host: e.GRAFANA_LOKI_HOST,
+    userId: e.GRAFANA_LOKI_USER_ID,
+    apiToken: e.GRAFANA_LOKI_API_TOKEN,
+  },
   db: {
     uri: e.MONGODB_URI,
     maxPoolSize: e.MONGODB_MAX_POOL_SIZE,
