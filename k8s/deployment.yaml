@@ -1,9 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: identity
+  namespace: corelabs
   labels:
-    name: identity
-    namespace: corelabs
     app: identity
 spec:
   replicas: 1
