@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: identity
+  name: identity
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: identity
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: identity
+    spec:
+      containers:
+      - image: etre548/identity:latest
+        name: identity
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 4001
+        envFrom:
+        - secretRef:
+            name: identity-secrets
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: "1"
+            memory: 1Gi

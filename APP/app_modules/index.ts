@@ -12,7 +12,7 @@ import { config } from "../../CORE/config";
 import { connectKafkaProducer, disconnectKafkaProducer } from "../../CORE/services/kafka";
 import { startOnboardingCleanupWorker, stopOnboardingCleanupWorker } from "../../CORE/workers/onboardingCleanup";
 import { initSocket, startSocketRedisBridge } from "../../CORE/services/socket";
-
+import {getMetrics} from"../../CORE/services/prometheus/"
 const app = express();
 
 app.set('etag', false);
@@ -29,6 +29,7 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(requestLogger);
+app.get('/metrics', getMetrics);
 
 const httpServer = http.createServer(app);
 

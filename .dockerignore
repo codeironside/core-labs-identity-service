@@ -1,0 +1,16 @@
+.gitignore
+K8s/
+.env*
+.env
+.env.development
+.env.production
+.env.staging
+.env.test
+.env.local
+.env.development.local
+.env.production.local
+.env.staging.local
+.env.test.local
+logs/
+dist/
+node_modules/

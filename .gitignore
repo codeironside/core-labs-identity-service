@@ -12,3 +12,4 @@ logs/*
 logs/**
 logs/
 .env.staging
+k8s/secrets.yaml
