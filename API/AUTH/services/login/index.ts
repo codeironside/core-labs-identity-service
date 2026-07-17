@@ -23,6 +23,7 @@ import { purgeLegacyIncompleteMongoUser } from '@api/USERS/services/onboarding/d
 import { getPublicPlatformSignupSettings } from '@api/ADMIN/services/platform_settings';
 import { findUserById, findUserOne } from '@core/services/db/userLookup';
 import { assertUserNotPlatformBanned } from '@api/AUTH/services/assertNotBanned';
+import { publishUserSynced } from '@api/AUTH/services/publishUserSynced';
 
 export type { TokenPair, AuthSessionResponse } from '@api/AUTH/interfaces';
 
@@ -59,16 +60,39 @@ async function buildAuthSession(
     workspaceId: unknown;
     role: string;
     userType?: string;
+    email?: string;
+    name?: string;
+    platformBanned?: boolean;
+    avatarUrl?: string;
+    profileImage?: string;
     privyUserId?: string;
     solanaUsdcWalletAddress?: string;
   },
   rememberMe = false,
+  syncReason: 'login' | 'refresh' = 'login',
 ): Promise<AuthSessionResponse> {
   const tokens = issueTokenPair(user, rememberMe);
   const ttl = rememberMe ? config.jwt.rememberMeTtl : config.jwt.refreshTtl;
   await storeRefreshToken(String(user._id), tokens.refreshToken, ttl);
 
   const privyToken = await generatePrivyCustomToken(String(user._id));
+
+  await publishUserSynced(
+    {
+      userId: String(user._id),
+      workspaceId: String(user.workspaceId),
+      role: user.role,
+      ...(user.email ? { email: user.email } : {}),
+      ...(user.name ? { name: user.name } : {}),
+      ...(user.userType ? { userType: user.userType } : {}),
+      ...(typeof user.platformBanned === 'boolean'
+        ? { platformBanned: user.platformBanned }
+        : {}),
+      ...(user.avatarUrl ? { avatarUrl: user.avatarUrl } : {}),
+      ...(user.profileImage ? { profileImage: user.profileImage } : {}),
+    },
+    syncReason,
+  );
 
   return {
     ...tokens,
@@ -172,6 +196,23 @@ export async function loginOAuthUser(
         method: `oauth:${profile.provider}`,
       },
       String(completeUser._id),
+    );
+
+    await publishUserSynced(
+      {
+        userId: String(completeUser._id),
+        workspaceId: String(completeUser.workspaceId),
+        role: completeUser.role,
+        email: completeUser.email,
+        name: completeUser.name,
+        ...(completeUser.userType ? { userType: completeUser.userType } : {}),
+        ...(typeof completeUser.platformBanned === 'boolean'
+          ? { platformBanned: completeUser.platformBanned }
+          : {}),
+        ...(completeUser.avatarUrl ? { avatarUrl: completeUser.avatarUrl } : {}),
+        ...(completeUser.profileImage ? { profileImage: completeUser.profileImage } : {}),
+      },
+      'login',
     );
 
     return {
@@ -314,6 +355,23 @@ export async function refreshTokens(payload: { refreshToken: string }): Promise<
     KAFKA_TOPICS.USER_REFRESHED,
     { userId },
     userId,
+  );
+
+  await publishUserSynced(
+    {
+      userId,
+      workspaceId: String(user.workspaceId),
+      role: user.role,
+      ...(user.email ? { email: user.email } : {}),
+      ...(user.name ? { name: user.name } : {}),
+      ...(user.userType ? { userType: user.userType } : {}),
+      ...(typeof user.platformBanned === 'boolean'
+        ? { platformBanned: user.platformBanned }
+        : {}),
+      ...(user.avatarUrl ? { avatarUrl: user.avatarUrl } : {}),
+      ...(user.profileImage ? { profileImage: user.profileImage } : {}),
+    },
+    'refresh',
   );
 
   return tokens;

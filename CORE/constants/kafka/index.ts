@@ -6,6 +6,10 @@ export const KAFKA_TOPICS = {
   USER_OAUTH_LINKED: 'identity.user.oauth.linked',
   USER_FORGOT_PASSWORD: 'identity.user.forgot.password',
   USER_RESET_PASSWORD: 'identity.user.reset.password',
+  /** Full auth projection for downstream services (content-studio, etc.). */
+  USER_SYNCED: 'identity.user.synced',
+  /** Role change from admin panel. */
+  USER_ROLE_UPDATED: 'identity.user.role.updated',
   WALLET_PROVISIONED: 'identity.wallet.provisioned',
   ONBOARDING_STARTED: 'identity.onboarding.started',
   ONBOARDING_STEP_SAVED: 'identity.onboarding.step.saved',

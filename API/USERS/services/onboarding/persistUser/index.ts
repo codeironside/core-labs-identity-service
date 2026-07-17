@@ -6,6 +6,7 @@ import { attachPrivyWalletToUser } from '@api/AUTH/services/privy/attachWallet';
 import { initializeFreemiumWallet } from '@api/WALLETS/services/initialize.freemium';
 import { publishKafkaEvent } from '@core/services/kafka';
 import { KAFKA_TOPICS } from '@core/constants/kafka';
+import { publishUserSynced } from '@api/AUTH/services/publishUserSynced';
 import { buildVendorProfileFromDraft } from '../validateStep';
 import {
   findUserByEmail,
@@ -141,6 +142,18 @@ export const persistOnboardingUser = async (
       authMethod: account.authMethod,
     },
     userId,
+  );
+
+  await publishUserSynced(
+    {
+      userId,
+      workspaceId: workspaceIdStr,
+      role: user.role,
+      email: normalizedEmail,
+      name: account.name,
+      userType,
+    },
+    'register',
   );
 
   return { userId, workspaceId: workspaceIdStr };

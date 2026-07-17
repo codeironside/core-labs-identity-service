@@ -29,6 +29,7 @@ import {
 import { bypassVendorIdentityVerification } from '@api/ADMIN/services/vendorIdentityBypass';
 import { findUserById } from '@core/services/db/userLookup';
 import { fetchPlatformAnalytics } from '@api/ADMIN/services/platformAnalytics';
+import { publishUserRoleUpdated } from '@api/AUTH/services/publishUserSynced';
 
 const RoleUpdateSchema = z.object({
   role: z.enum(['super_admin', 'admin', 'editor', 'member', 'viewer']),
@@ -102,8 +103,20 @@ adminRouter.patch('/users/:userId/role', async (req: Request, res: Response, nex
 
     assertCanManageTargetUser(actor, target);
 
+    const previousRole = target.role;
     target.role = role;
     await target.save();
+
+    await publishUserRoleUpdated({
+      userId: String(target._id),
+      workspaceId: String(target.workspaceId),
+      role,
+      previousRole,
+      updatedBy: actor.userId,
+      email: target.email,
+      name: target.name,
+      ...(target.userType ? { userType: target.userType } : {}),
+    });
 
     res.status(HTTP_STATUS.OK).json({ success: true, message: 'Role updated', data: {} });
   } catch (err) {
